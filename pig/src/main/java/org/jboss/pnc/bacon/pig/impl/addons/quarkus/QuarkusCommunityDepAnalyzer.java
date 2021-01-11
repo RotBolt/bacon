@@ -257,25 +257,18 @@ public class QuarkusCommunityDepAnalyzer extends AddOn {
     }
 
     private Set<String> extractExtensionsJsonArtifactIds() {
-        List<Path> devtoolsCommonJars = findAllByExtension("json").stream()
-                .filter(path -> path.endsWith(devtoolsJarName()))
-                .collect(Collectors.toList());
+        List<Path> devtoolsCommonJars = findAllByExtension("json");
 
         if (devtoolsCommonJars.size() == 1) {
             return unpackArtifactIdsFrom(devtoolsCommonJars.get(0));
         }
+        devtoolsCommonJars.forEach(path -> {
+            log.error("Json file found: "+path);
+        });
         throw new RuntimeException(
-                "Expected a single " + devtoolsJarName() + " in the repo, found: " + devtoolsCommonJars.size());
+                "Expected a single file in the repo, found: " + devtoolsCommonJars.size());
     }
 
-    private String devtoolsJarName() {
-        String bomArtifactId = getBomArtifactId();
-        if (!isProductBom(bomArtifactId)) {
-            return "quarkus-bom-descriptor-json-" + quarkusVersion + ".json";
-        } else {
-            return bomArtifactId + "-" + quarkusVersion + ".json";
-        }
-    }
 
     private Set<String> unpackArtifactIdsFrom(Path extensionsPath) {
         Set<String> artifactIds = new HashSet<>();
