@@ -241,6 +241,10 @@ public class QuarkusCommunityDepAnalyzer extends AddOn {
                 settingsSelector);
         log.info("will create project with {}", command);
         OSCommandExecutor.runCommandIn(command, tempProjectLocation);
+        String tmpDir = tempProjectLocation.toString() + "/tmp";
+        Path tmpDirPath = Paths.get(tmpDir);
+        String generateConfigCommand = "./mvnw quarkus:generate-config -Dfile=application.properties";
+        OSCommandExecutor.runCommandIn(generateConfigCommand, tmpDirPath);
 
         return tempProjectLocation.resolve("tmp");
     }
@@ -258,17 +262,17 @@ public class QuarkusCommunityDepAnalyzer extends AddOn {
 
     private Set<String> extractExtensionsJsonArtifactIds() {
         List<Path> devtoolsCommonJars = findAllByExtension("json");
-
+        devtoolsCommonJars.forEach(path -> {
+            log.info("Json file " + path);
+        });
         if (devtoolsCommonJars.size() == 1) {
             return unpackArtifactIdsFrom(devtoolsCommonJars.get(0));
         }
         devtoolsCommonJars.forEach(path -> {
-            log.error("Json file found: "+path);
+            log.error("Json file found: " + path);
         });
-        throw new RuntimeException(
-                "Expected a single file in the repo, found: " + devtoolsCommonJars.size());
+        throw new RuntimeException("Expected a single file in the repo, found: " + devtoolsCommonJars.size());
     }
-
 
     private Set<String> unpackArtifactIdsFrom(Path extensionsPath) {
         Set<String> artifactIds = new HashSet<>();
